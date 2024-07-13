@@ -24,4 +24,13 @@ export class UserRepository {
 
         return all
     }
+
+    async findByName(name: string): Promise<User[]> {
+        const categories = await this.repository
+        .createQueryBuilder('users')
+        .where('LOWER(name) LIKE :pattern', { pattern: `%${ name.toLowerCase() }%` })                                    
+        .getMany()
+
+        return categories
+    }
 }

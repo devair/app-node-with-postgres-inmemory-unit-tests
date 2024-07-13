@@ -1,15 +1,29 @@
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
+import * as dotenv from 'dotenv';
 
-export const AppDataSource = new DataSource({
-  type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'docker',
-  password: 'docker',
-  database: 'pedidos_db',
+dotenv.config()
+
+const commonConfig = {
+  entities: [__dirname + '/entities/*.ts'],
   synchronize: true,
-  logging: true,
-  entities: ['dist/entities/*.js'],
-  subscribers: [],
-  migrations: [],
-});
+};
+
+const developmentConfig: DataSourceOptions = {
+  ...commonConfig,
+  type: 'postgres',
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+};
+
+const testConfig: DataSourceOptions = {
+  ...commonConfig,
+  type: 'sqlite',
+  database: ':memory:',
+};
+
+const dataSourceConfig  = process.env.NODE_ENV === 'test' ? testConfig : developmentConfig;
+
+export const AppDataSource = new DataSource(dataSourceConfig);
